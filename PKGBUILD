@@ -15,7 +15,7 @@ makedepends=(jdk-openjdk gcc-fortran tk texlive-core)
 optdepends=('tk: tcl/tk interface'
             'texlive-bin: latex sty files'
             'gcc-fortran: needed to compile some CRAN packages'
-            'openblas: faster linear algebra')
+            'blas-openblas: faster linear algebra')
 backup=('etc/R/Makeconf' 'etc/R/Renviron' 'etc/R/ldpaths' 'etc/R/repositories' 'etc/R/javaconf')
 options=(!emptydirs)
 source=(https://cran.r-project.org/src/base/R-${pkgver%%.*}/R-$pkgver.tar.gz
