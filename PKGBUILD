@@ -122,9 +122,9 @@ package() {
 
 # Add provides for bundled packages
   for _f in "$pkgdir"/usr/lib/R/library/*/DESCRIPTION; do
-    _pkg=$(grep Package: $_f | cut -d' ' -f2 | tr '[:upper:]' '[:lower:]')
-    _ver=$(grep Version $_f | cut -d' ' -f2)
-    _prov="r-$_pkg=${_ver/-/.}"
+    _pkg=$(grep '^Package:' $_f | cut -d' ' -f2)
+    _ver=$(grep '^Version:' $_f | cut -d' ' -f2)
+    _prov="r-${_pkg,,}=${_ver//-/.}"
     provides+=($_prov)
   done
 }
