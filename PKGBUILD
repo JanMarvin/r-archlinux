@@ -2,10 +2,11 @@
 # Contributor: Ronald van Haren <ronald.archlinux.org>
 # Contributor: Damir Perisa <damir.perisa@bluewin.ch>
 # Contributor: K. Piche <kpiche@rogers.com>
+verdate=$(date +"%Y%m%d")
 
-pkgname=r
-pkgver=4.5.2
-pkgrel=3
+pkgname=r-devel
+pkgver=$verdate
+pkgrel=1
 pkgdesc='Language and environment for statistical computing and graphics'
 arch=(x86_64)
 license=(GPL)
@@ -39,10 +40,11 @@ depends=(bash
          zlib
          zstd)
 makedepends=(gcc-fortran
+             git
              jdk-openjdk
              texlive-fontsrecommended
              texlive-latexrecommended
-             tk)
+             wget)
 optdepends=('blas-openblas: faster linear algebra'
             'gcc-fortran: needed to compile some CRAN packages'
             'texlive-latex: latex sty files')
@@ -51,24 +53,32 @@ backup=(etc/R/Makeconf
         etc/R/ldpaths
         etc/R/repositories
         etc/R/javaconf)
-options=(!emptydirs)
-source=(https://cran.r-project.org/src/base/R-${pkgver%%.*}/R-$pkgver.tar.gz
+options=(!emptydirs !debug)
+conflicts=('r')
+provides=('r')
+source=("r-devel::git+https://github.com/r-devel/r-svn.git#branch=main"
 	r.desktop
 	r.png
 	R.conf)
-sha256sums=('0d71ff7106ec69cd7c67e1e95ed1a3cee355880931f2eb78c530014a9e379f20'
+sha256sums=('SKIP'
             '25b01ea93fa704884b65ba002d44d4e99725bd826997e8c73b6467df9f23c798'
             '1580d06a737951f4f3c903cbd514247d9071fc6868eb9c2de94bb999cc195cb1'
             'b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef')
 
 prepare() {
-  cd R-$pkgver
+  cd $pkgname
   # set texmf dir correctly in makefile
   sed -i 's|$(rsharedir)/texmf|${datarootdir}/texmf|' share/Makefile.in
+
+  # Download the recommended packages
+  .github/scripts/wget-recommended.sh
+
+  # SVN fix from r-devel/r-svn
+  sed -i.bak 's|$(GIT) svn info|./.github/scripts/svn-info.sh|' Makefile.in
 }
 
 build() {
-  cd R-$pkgver
+  cd $pkgname
 # -ffat-lto-objects is needed for third-party packages shipping static libraries
   CFLAGS+=" -ffat-lto-objects" \
   CXXFLAGS+=" -ffat-lto-objects" \
@@ -93,8 +103,13 @@ build() {
   make shared
 }
 
+check() {
+  cd $pkgname
+  make check || true
+}
+
 package() {
-  cd R-$pkgver
+  cd $pkgname
   make DESTDIR="$pkgdir" install install-info
 
 # install libRmath.so
@@ -130,3 +145,4 @@ package() {
     provides+=($_prov)
   done
 }
+
