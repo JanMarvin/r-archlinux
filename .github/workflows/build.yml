@@ -1,0 +1,68 @@
+on:
+  push:
+    branches:
+      - devel
+
+name: Build R-Arch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [ 'arch' ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build Image
+        run: docker build -f arch/Dockerfile -t mybuild .
+
+      - name: Run Container
+        run: docker run -d --name myrun mybuild sleep infinity
+
+      - name: Extract Metadata and Files
+        id: meta
+        run: |
+          # Parse .SRCINFO for exact naming
+          PKGNAME=$(docker exec myrun awk -F ' = ' '/pkgname =/ {print $2}' .SRCINFO | tr -d '[:space:]')
+          PKGVER=$(docker exec myrun awk -F ' = ' '/pkgver =/ {print $2}' .SRCINFO | tr -d '[:space:]')
+          PKGREL=$(docker exec myrun awk -F ' = ' '/pkgrel =/ {print $2}' .SRCINFO | tr -d '[:space:]')
+          ARCH=$(docker exec myrun awk -F ' = ' '/arch =/ {print $2}' .SRCINFO | head -n 1 | tr -d '[:space:]')
+          
+          FILENAME="${PKGNAME}-${PKGVER}-${PKGREL}-${ARCH}.pkg.tar.zst"
+          BRANCH_NAME=${GITHUB_REF_NAME}
+          
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          echo "VERSION=$PKGVER" >> $GITHUB_ENV
+          echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          
+          # Copy files out using exact names
+          docker cp "myrun:/home/archie/r-archlinux/${FILENAME}" .
+          docker cp "myrun:/home/archie/r-archlinux/.SRCINFO" .
+          docker cp "myrun:/home/archie/r-archlinux/r-archlinux.sha256sum" "./${FILENAME}.sha256sum"
+          docker stop myrun
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.FILENAME }}
+          path: |
+            ${{ env.FILENAME }}
+            ${{ env.FILENAME }}.sha256sum
+            .SRCINFO
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: "${{ env.BRANCH }}-${{ env.VERSION }}"
+          name: "R-devel ${{ env.VERSION }} (${{ env.BRANCH }})"
+          draft: false
+          prerelease: true
+          files: |
+            ${{ env.FILENAME }}
+            ${{ env.FILENAME }}.sha256sum
+            .SRCINFO
