@@ -4,8 +4,8 @@
 # Contributor: K. Piche <kpiche@rogers.com>
 
 pkgname=r
-pkgver=4.5.2
-pkgrel=3
+pkgver=4.6.0
+pkgrel=1
 pkgdesc='Language and environment for statistical computing and graphics'
 arch=(x86_64)
 license=(GPL)
@@ -51,20 +51,30 @@ backup=(etc/R/Makeconf
         etc/R/ldpaths
         etc/R/repositories
         etc/R/javaconf)
-options=(!emptydirs)
-source=(https://cran.r-project.org/src/base/R-${pkgver%%.*}/R-$pkgver.tar.gz
-	r.desktop
+options=(!emptydirs !debug)
+source=(
+    #https://cran.r-project.org/src/base/R-${pkgver%%.*}/R-$pkgver.tar.gz
+    "R-$pkgver::git+https://github.com/JanMarvin/r-svn.git#branch=crossprod_ddot"
+    r.desktop
 	r.png
 	R.conf)
-sha256sums=('0d71ff7106ec69cd7c67e1e95ed1a3cee355880931f2eb78c530014a9e379f20'
-            '25b01ea93fa704884b65ba002d44d4e99725bd826997e8c73b6467df9f23c798'
-            '1580d06a737951f4f3c903cbd514247d9071fc6868eb9c2de94bb999cc195cb1'
-            'b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef')
+sha256sums=(
+    # '0d71ff7106ec69cd7c67e1e95ed1a3cee355880931f2eb78c530014a9e379f20'
+    'SKIP'
+    '25b01ea93fa704884b65ba002d44d4e99725bd826997e8c73b6467df9f23c798'
+    '1580d06a737951f4f3c903cbd514247d9071fc6868eb9c2de94bb999cc195cb1'
+    'b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef')
 
 prepare() {
   cd R-$pkgver
   # set texmf dir correctly in makefile
   sed -i 's|$(rsharedir)/texmf|${datarootdir}/texmf|' share/Makefile.in
+
+  # Download the recommended packages
+  ./tools/rsync-recommended
+
+  # SVN fix from r-devel/r-svn
+  sed -i.bak 's|$(GIT) svn info|./.github/scripts/svn-info.sh|' Makefile.in
 }
 
 build() {
@@ -86,7 +96,7 @@ build() {
                --with-blas \
                F77=gfortran \
                LIBnn=lib
-  make
+  make -j16
   make pdf info
 
   cd src/nmath/standalone
