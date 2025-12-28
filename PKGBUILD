@@ -5,7 +5,7 @@
 
 pkgname=r
 pkgver=4.6.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Language and environment for statistical computing and graphics'
 arch=(x86_64)
 license=(GPL)
@@ -54,7 +54,7 @@ backup=(etc/R/Makeconf
 options=(!emptydirs !debug)
 source=(
     #https://cran.r-project.org/src/base/R-${pkgver%%.*}/R-$pkgver.tar.gz
-    "R-$pkgver::git+https://github.com/JanMarvin/r-svn.git#branch=crossprod_ddot"
+    "R-$pkgver::git+https://github.com/JanMarvin/r-svn.git#branch=bitmask_naninf"
     r.desktop
 	r.png
 	R.conf)
