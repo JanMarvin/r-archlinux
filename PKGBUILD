@@ -87,7 +87,7 @@ build() {
                F77=gfortran \
                LIBnn=lib
   make
-  make pdf info
+  make info
 
   cd src/nmath/standalone
   make shared
@@ -95,7 +95,7 @@ build() {
 
 package() {
   cd R-$pkgver
-  make DESTDIR="$pkgdir" install install-pdf install-info
+  make DESTDIR="$pkgdir" install install-info
 
 # install libRmath.so
   cd src/nmath/standalone
