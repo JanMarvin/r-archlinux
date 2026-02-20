@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - devel
+  workflow_dispatch:
 
 name: Build R-Arch
 
