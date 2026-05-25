@@ -60,11 +60,13 @@ provides=('r')
 source=("r-devel::git+https://github.com/r-devel/r-svn.git#branch=main"
 	r.desktop
 	r.png
-	R.conf)
+	R.conf
+	svn-info.sh)
 sha256sums=('SKIP'
             '25b01ea93fa704884b65ba002d44d4e99725bd826997e8c73b6467df9f23c798'
             '1580d06a737951f4f3c903cbd514247d9071fc6868eb9c2de94bb999cc195cb1'
-            'b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef')
+            'b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef'
+            '51e6a8036f289505706a8e542d1b72477c175d568af6627cda58d3a4ba0f960d')
 
 prepare() {
   cd $pkgname
@@ -72,10 +74,10 @@ prepare() {
   sed -i 's|$(rsharedir)/texmf|${datarootdir}/texmf|' share/Makefile.in
 
   # Download the recommended packages
-  .github/scripts/wget-recommended.sh
-
+  ./tools/fetch-recommended
+  
   # SVN fix from r-devel/r-svn
-  sed -i.bak 's|$(GIT) svn info|./.github/scripts/svn-info.sh|' Makefile.in
+  sed -i.bak 's|$(GIT) svn info|./../svn-info.sh|' Makefile.in
 }
 
 build() {
@@ -146,4 +148,3 @@ package() {
     provides+=($_prov)
   done
 }
-

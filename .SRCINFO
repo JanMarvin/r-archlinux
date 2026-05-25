@@ -56,10 +56,12 @@ pkgbase = r-devel
 	source = r.desktop
 	source = r.png
 	source = R.conf
+	source = svn-info.sh
 	sha256sums = SKIP
 	sha256sums = 25b01ea93fa704884b65ba002d44d4e99725bd826997e8c73b6467df9f23c798
 	sha256sums = 1580d06a737951f4f3c903cbd514247d9071fc6868eb9c2de94bb999cc195cb1
 	sha256sums = b7833166041b06f716b6a79095d27d4abd83549816dc53193213827139eae6ef
+	sha256sums = 51e6a8036f289505706a8e542d1b72477c175d568af6627cda58d3a4ba0f960d
 
 pkgname = r-devel
 	provides = r
